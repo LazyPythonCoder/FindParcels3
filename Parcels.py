@@ -198,7 +198,7 @@ class Main(tk.Frame):
                             date_oper = datetime.datetime.fromtimestamp(int(timestamp))
                             mail_events[date_oper] = event['operation']
                         except:
-                            mail_events[date_oper] = "ИЕРЕГЛИФЫ"
+                            mail_events[date_oper] = "ИЕРЕГЛИФЫ!!"
                      return mail_events
                 else:
                      return mail_events
