@@ -40,22 +40,22 @@ class Main(tk.Frame):
         toolbar = tk.Frame(bg="#d7d8e0", bd=2)
         toolbar.pack(side=tk.TOP, fill=tk.X)
         self.add_img = tk.PhotoImage(file="add.gif")
-        bt_open_dialog = tk.Button(toolbar, text="Добавить позицию", command=self.open_dialog, bg="#d7d8e0", bd=0,
+        bt_open_dialog = tk.Button(toolbar, text=" Добавить позицию ", command=self.open_dialog, bg="#d7d8e0", bd=0,
                                    compound=tk.TOP, image=self.add_img)
         bt_open_dialog.pack(side=tk.LEFT)
 
         self.update_img = tk.PhotoImage(file='update.gif')
-        btn_edit_dialog = tk.Button(toolbar, text='Редактировать', bg='#d7d8e0', bd=0, image=self.update_img,
+        btn_edit_dialog = tk.Button(toolbar, text=' Редактировать ', bg='#d7d8e0', bd=0, image=self.update_img,
                                     compound=tk.TOP, command=self.open_update_dialog)
         btn_edit_dialog.pack(side=tk.LEFT)
 
         self.delete_img = tk.PhotoImage(file='delete.gif')
-        btn_delete = tk.Button(toolbar, text='Удалить позицию', bg='#d7d8e0', bd=0, image=self.delete_img,
+        btn_delete = tk.Button(toolbar, text=' Удалить позицию ', bg='#d7d8e0', bd=0, image=self.delete_img,
                                compound=tk.TOP, command=self.delete_records)
         btn_delete.pack(side=tk.LEFT)
 
         self.mail_img = tk.PhotoImage(file='pochta.gif')
-        btn_mail = tk.Button(toolbar, text='Отследить посылку', bg='#d7d8e0', bd=0, image=self.mail_img,
+        btn_mail = tk.Button(toolbar, text=' Отследить посылку ', bg='#d7d8e0', bd=0, image=self.mail_img,
                              compound=tk.TOP, command=self.mail_check_show)
         btn_mail.pack(side=tk.LEFT)
 
@@ -65,7 +65,7 @@ class Main(tk.Frame):
         btn_search.pack(side=tk.LEFT)
 
         self.refresh_img = tk.PhotoImage(file='refresh.gif')
-        btn_refresh = tk.Button(toolbar, text='Обновить информацию', bg='#d7d8e0', bd=0, image=self.refresh_img,
+        btn_refresh = tk.Button(toolbar, text=' Обновить информацию ', bg='#d7d8e0', bd=0, image=self.refresh_img,
                                 compound=tk.TOP, command=self.all_mail_check)
         btn_refresh.pack(side=tk.LEFT)
 
