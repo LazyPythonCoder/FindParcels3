@@ -65,7 +65,7 @@ class Main(tk.Frame):
         btn_search.pack(side=tk.LEFT)
 
         self.refresh_img = tk.PhotoImage(file='refresh.gif')
-        btn_refresh = tk.Button(toolbar, text='Обновить посылки', bg='#d7d8e0', bd=0, image=self.refresh_img,
+        btn_refresh = tk.Button(toolbar, text='Обновить информацию', bg='#d7d8e0', bd=0, image=self.refresh_img,
                                 compound=tk.TOP, command=self.all_mail_check)
         btn_refresh.pack(side=tk.LEFT)
 
