@@ -131,7 +131,6 @@ class Main(tk.Frame):
                 self.tree.insert('', 'end', values=row, tags=("new"))
             else:
                 self.tree.insert('', 'end', values=row, tags=("old"))
-        # [self.tree.insert('', 'end', values=row,) for row in self.db.c.fetchall()]
 
     def search_records(self, treck):
         treck = ('%'+treck+'%',)
