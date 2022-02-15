@@ -21,6 +21,7 @@ class Main(tk.Frame):
         self.style.map('Treeview', foreground=self.fixed_map('foreground'), background=self.fixed_map('background'))
         self.tree.tag_configure("new", foreground="green", background="white")
         self.tree.tag_configure("old", foreground="black", background="white")
+        self.recieved_events = ["Получено адресатом", "Package received", "Вручено в постамате", "Получено"]
 
     def fixed_map(self, option):
         # Fix for setting text colour for Tkinter 8.6.9
@@ -65,7 +66,7 @@ class Main(tk.Frame):
 
         self.refresh_img = tk.PhotoImage(file='refresh.gif')
         btn_refresh = tk.Button(toolbar, text='Обновить', bg='#d7d8e0', bd=0, image=self.refresh_img,
-                                compound=tk.TOP, command=self.view_records)
+                                compound=tk.TOP, command=self.all_mail_check)
         btn_refresh.pack(side=tk.LEFT)
 
         self.tree = ttk.Treeview(self, columns=("data_of_order", "treck", "description", "info_mail", "parcel_recieved"), height = 15, show = "headings")
@@ -100,6 +101,12 @@ class Main(tk.Frame):
         self.db.conn.commit()
         self.view_records( treck, flag)
 
+    def update_recordAll(self, data_of_order, treck, description, info_mail="Нет данных", parcel_recieved="False"):
+        self.db.c.execute('''UPDATE parcels SET data_of_order=?, treck=?, description=?, info_mail=?, parcel_recieved=? WHERE treck=?''',
+                          (data_of_order, treck, description, info_mail, parcel_recieved, treck,))
+        self.db.conn.commit()
+
+
     def open_dialog(self):
         Child()
 
@@ -126,8 +133,6 @@ class Main(tk.Frame):
                 self.tree.insert('', 'end', values=row, tags=("old"))
         # [self.tree.insert('', 'end', values=row,) for row in self.db.c.fetchall()]
 
-        # self.tree.tag_configure("new", foreground="green", background="white")
-        # self.tree.tag_configure("old", foreground="black", background="white")
     def search_records(self, treck):
         treck = ('%'+treck+'%',)
         self.db.c.execute('''SELECT * FROM parcels WHERE treck LIKE ?''', treck)
@@ -164,8 +169,8 @@ class Main(tk.Frame):
             "X-Api-Key": "1799fa40855d01e4ec00b4742be8bbda",
             "Content-Type": "application/json"
         }
-        url_post_trek = " https://moyaposylka.ru/api/v1/trackers/" + self.get_carrier(treck_number) + "/" + treck_number
-        req = requests.post(url_post_trek, headers=headers)
+        url_post_treck = " https://moyaposylka.ru/api/v1/trackers/" + self.get_carrier(treck_number) + "/" + treck_number
+        req = requests.post(url_post_treck, headers=headers)
         src = req.text
         print("Ответ сайта на постановку трека на поиск")
         print(src)
@@ -208,11 +213,11 @@ class Main(tk.Frame):
             return mail_events
 
     def mail_check_show(self):
-        trek=""
-        recieved_events = ["Получено адресатом", "Package received", "Вручено в постамате", "Получено"]
+        treck=""
+
         for selection_item in self.tree.selection():
             data_of_order = self.tree.set(selection_item, '#1')
-            trek =  self.tree.set(selection_item, '#2')
+            treck =  self.tree.set(selection_item, '#2')
             description = self.tree.set(selection_item, '#3')
             info_mail = self.tree.set(selection_item, '#4')
             parcel_recieved = self.tree.set(selection_item, '#5')
@@ -222,16 +227,16 @@ class Main(tk.Frame):
         info_window.title("Поиск информации...")
         info_window.geometry('400x50')
         info_window.resizable(False, False)
-        lbl_info1 = tk.Label(info_window, text="Поиск данных для посылки: " + trek, font="Arial 12")
+        lbl_info1 = tk.Label(info_window, text="Поиск данных для посылки: " + treck, font="Arial 12")
         lbl_info1.pack()
         lbl_info2 = tk.Label(info_window, text="Ждем-с...", font="Arial 12")
         lbl_info2.pack()
         info_window.update()
 
-        if len(trek) ==0:
+        if len(treck) ==0:
             showerror(title='Ошибка', message="Выдилите запись!")
         else:
-            mail_answer = self.mail_check(trek)
+            mail_answer = self.mail_check(treck)
             if len(mail_answer)==0:
                 showinfo(title='Information', message="Посылка не надена")
             else:
@@ -250,17 +255,81 @@ class Main(tk.Frame):
                     oppstr.append(opp_str)
 
 
-                showinfo(title='Information from ' + self.get_carrier(trek), message=info)
+                showinfo(title='Information from ' + self.get_carrier(treck), message=info)
                 if info_mail !=  oppstr[0]:
                     print("Статус посылки изменился!!!")
                     flag=True
                 info_mail = oppstr[0]
 
-                if opp[0] in recieved_events:
+                if opp[0] in self.recieved_events:
                     print("Посылка получена!")
                     parcel_recieved = "True"
 
-                self.update_record(data_of_order, trek, description, info_mail, parcel_recieved, flag)
+                self.update_record(data_of_order, treck, description, info_mail, parcel_recieved, flag)
+
+        info_window.destroy()
+
+    def all_mail_check(self):
+        info_window = tk.Toplevel(self)
+        info_window.title("Поиск информации...")
+        info_window.geometry('400x50')
+        info_window.resizable(False, False)
+        lbl_info1 = tk.Label(info_window, text="Поиск данных для посылок ", font="Arial 12")
+        lbl_info1.pack()
+        lbl_info2 = tk.Label(info_window, text="Ждем-с...", font="Arial 12")
+        lbl_info2.pack()
+        info_window.update()
+        self.db.c.execute('''SELECT * FROM parcels''')
+        [self.tree.delete(i) for i in self.tree.get_children()]
+        flag_new = []
+        for row in self.db.c.fetchall():
+            data_of_order=row[0]
+            treck = row[1]
+            description = row[2]
+            info_mail = row[3]
+            parcel_recieved = row[4]
+            lbl_info1.configure(text="Поиск данных для посылки: "+treck)
+            info_window.update()
+
+
+            mail_answer = self.mail_check(treck)
+            if len(mail_answer) == 0:
+                info_mail = "Нет данных"
+            else:
+                i = 0
+                info = []
+                opp = []
+                oppstr = []
+                text_str = ""
+                opp_str = ""
+                for key, value in sorted(mail_answer.items(), reverse=True):
+                    i = i + 1
+                    print(i, " ## ", key, " ## ", value)
+                    opp_str = str(key) + " ## " + value
+                    opp.append(mail_answer[key])
+                    oppstr.append(opp_str)
+
+                if info_mail != oppstr[0]:
+                    print("Статус посылки изменился для "+treck)
+                    flag_new.append(treck)
+                    info_mail = oppstr[0]
+
+                if opp[0] in self.recieved_events:
+                    print("Посылка получена для "+treck)
+                    parcel_recieved = "True"
+
+            self.update_recordAll( data_of_order, treck, description, info_mail, parcel_recieved)
+
+        self.db.c.execute('''SELECT * FROM parcels''')
+        [self.tree.delete(i) for i in self.tree.get_children()]
+        print("Есть изменения для посылок: ", flag_new)
+        for row in self.db.c.fetchall():
+            if row[1] in flag_new:
+                print("Изменения ", row[1])
+                self.tree.insert('', 'end', values=row, tags=("new"))
+            else:
+                print("Изменений нет", row[1])
+                self.tree.insert('', 'end', values=row, tags=("old"))
 
         info_window.destroy()
 
@@ -308,7 +377,7 @@ class Update(Child):
 
     def init_edit(self):
         global record
-        print(record)
+
         self.title("Редактировать данные")
         self.btn_add.destroy()
         btn_edit = ttk.Button(self, text="Редактировать")
