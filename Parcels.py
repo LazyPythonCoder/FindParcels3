@@ -19,6 +19,8 @@ class Main(tk.Frame):
         self.view_records()
         self.style = ttk.Style()
         self.style.map('Treeview', foreground=self.fixed_map('foreground'), background=self.fixed_map('background'))
+        self.tree.tag_configure("new", foreground="green", background="white")
+        self.tree.tag_configure("old", foreground="black", background="white")
 
     def fixed_map(self, option):
         # Fix for setting text colour for Tkinter 8.6.9
@@ -122,10 +124,10 @@ class Main(tk.Frame):
                 self.tree.insert('', 'end', values=row, tags=("new"))
             else:
                 self.tree.insert('', 'end', values=row, tags=("old"))
-        # [self.tree.insert('', 'end', values=row, tags=("old")) for row in self.db.c.fetchall()]
+        # [self.tree.insert('', 'end', values=row,) for row in self.db.c.fetchall()]
 
-        self.tree.tag_configure("new", foreground="green", background="white")
-        self.tree.tag_configure("old", foreground="black", background="white")
+        # self.tree.tag_configure("new", foreground="green", background="white")
+        # self.tree.tag_configure("old", foreground="black", background="white")
     def search_records(self, treck):
         treck = ('%'+treck+'%',)
         self.db.c.execute('''SELECT * FROM parcels WHERE treck LIKE ?''', treck)
