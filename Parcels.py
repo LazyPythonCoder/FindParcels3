@@ -83,6 +83,8 @@ class Main(tk.Frame):
         self.tree.heading("parcel_recieved", text="Статус получения")
         self.tree.pack()
         self.tree.bind('<<TreeviewSelect>>', self.item_selected)
+        self.label_info = ttk.Label(self, width=100)
+        self.label_info.pack()
 
     def item_selected(self, event):
         global record
@@ -222,17 +224,8 @@ class Main(tk.Frame):
             parcel_recieved = self.tree.set(selection_item, '#5')
             print(info_mail)
 
-        info_window = tk.Toplevel(self)
-        info_window.title("Поиск информации...")
-        info_window.geometry('400x50')
-        info_window.resizable(False, False)
-        lbl_info1 = tk.Label(info_window, text="Поиск данных для посылки: " + treck, font="Arial 12")
-        lbl_info1.pack()
-        lbl_info2 = tk.Label(info_window, text="Ждем-с...", font="Arial 12")
-        lbl_info2.pack()
-        info_window.attributes('-topmost', True)
-        info_window.update()
-
+        self.label_info.configure(text="Поиск данных для посылки: " + treck+" Ждем-с...")
+        self.update()
         if len(treck) ==0:
             showerror(title='Ошибка', message="Выдилите запись!")
         else:
@@ -254,7 +247,6 @@ class Main(tk.Frame):
                     opp.append(mail_answer[key])
                     oppstr.append(opp_str)
 
-
                 showinfo(title='Information from ' + self.get_carrier(treck), message=info)
                 if info_mail !=  oppstr[0]:
                     print("Статус посылки изменился!!!")
@@ -267,19 +259,13 @@ class Main(tk.Frame):
 
                 self.update_record(data_of_order, treck, description, info_mail, parcel_recieved, flag)
 
-        info_window.destroy()
+        self.label_info.configure(text="")
+        self.update()
 
     def all_mail_check(self):
-        info_window = tk.Toplevel(self)
-        info_window.title("Поиск информации...")
-        info_window.geometry('400x50')
-        info_window.resizable(False, False)
-        lbl_info1 = tk.Label(info_window, text="Поиск данных для посылок ", font="Arial 12")
-        lbl_info1.pack()
-        lbl_info2 = tk.Label(info_window, text="Ждем-с...", font="Arial 12")
-        lbl_info2.pack()
-        info_window.attributes('-topmost', True)
-        info_window.update()
+
+        self.label_info.configure(text="Поиск данных для посылок. Ждем-с...")
+        self.update()
 
         self.db.c.execute('''SELECT * FROM parcels''')
         [self.tree.delete(i) for i in self.tree.get_children()]
@@ -290,8 +276,8 @@ class Main(tk.Frame):
             description = row[2]
             info_mail = row[3]
             parcel_recieved = row[4]
-            lbl_info1.configure(text="Поиск данных для посылки: "+treck)
-            info_window.update()
+            self.label_info.configure(text="Поиск данных для посылки: "+treck)
+            self.update()
 
 
             mail_answer = self.mail_check(treck)
@@ -333,8 +319,8 @@ class Main(tk.Frame):
                 print("Изменений нет", row[1])
                 self.tree.insert('', 'end', values=row, tags=("old"))
 
-        info_window.destroy()
-
+        self.label_info.configure(text="")
+        self.update()
 
 class Child(tk.Toplevel):
     def __init__(self):
