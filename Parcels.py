@@ -83,7 +83,7 @@ class Main(tk.Frame):
         self.tree.heading("parcel_recieved", text="Статус получения")
         self.tree.pack()
         self.tree.bind('<<TreeviewSelect>>', self.item_selected)
-        self.label_info = ttk.Label(self, width=100)
+        self.label_info = ttk.Label(self, width=200)
         self.label_info.pack()
 
     def item_selected(self, event):
@@ -199,12 +199,19 @@ class Main(tk.Frame):
                 return mail_events
             else:
                 events = res_dict["events"]
+
                 if len(events) > 0:
                      for event in events:
                         try:
                             timestamp = str(event['eventDate'])[:-3]
                             date_oper = datetime.datetime.fromtimestamp(int(timestamp))
-                            mail_events[date_oper] = event['operation']
+
+                            try:
+                                location = str(event['location'])
+                            except:
+                                location = ""
+                            place_event = str(event['operation']+" ## "+location)
+                            mail_events[date_oper] = place_event
                         except:
                             mail_events[date_oper] = "ИЕРЕГЛИФЫ!!"
                      return mail_events
@@ -242,6 +249,9 @@ class Main(tk.Frame):
                     i = i + 1
                     print(i, " ## ", key, " ## ", value)
                     text_str = str(i) + " ## " + str(key) + " ## " + value + "\n"
+                    self.label_info.configure(text="Поиск данных для посылки: " + treck + " ## "+text_str)
+                    self.update()
+                    time.sleep(0.3)
                     opp_str = str(key) + " ## " + value
                     info.append(text_str)
                     opp.append(mail_answer[key])
@@ -279,7 +289,6 @@ class Main(tk.Frame):
             self.label_info.configure(text="Поиск данных для посылки: "+treck)
             self.update()
 
-
             mail_answer = self.mail_check(treck)
             if len(mail_answer) == 0:
                 info_mail = "Нет данных"
@@ -294,6 +303,9 @@ class Main(tk.Frame):
                     i = i + 1
                     print(i, " ## ", key, " ## ", value)
                     opp_str = str(key) + " ## " + value
+                    self.label_info.configure(text="Поиск данных для посылки: " + treck + " ## " + opp_str)
+                    self.update()
+                    time.sleep(0.3)
                     opp.append(mail_answer[key])
                     oppstr.append(opp_str)
 
