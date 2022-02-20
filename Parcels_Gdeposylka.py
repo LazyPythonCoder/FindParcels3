@@ -74,7 +74,7 @@ class Main(tk.Frame):
 
         self.info_img = tk.PhotoImage(file='info.gif')
         btn_info = tk.Button(toolbar, text='О программе', bg='#d7d8e0', bd=0, image=self.info_img,
-                                compound=tk.TOP, command=self.info_show)
+                                compound=tk.TOP, command=self.info_prog)
         btn_info.pack(side=tk.RIGHT)
 
         self.tree = ttk.Treeview(self, columns=("data_of_order", "treck", "description", "info_mail", "parcel_recieved"), height = 15, show = "headings")
@@ -94,8 +94,8 @@ class Main(tk.Frame):
         self.label_info = ttk.Label(self, width=200)
         self.label_info.pack()
 
-    def info_show(self):
-        pass
+    def info_prog(self):
+        showinfo(title='Information', message="Данные о порограмме")
 
     def item_selected(self, event):
         global record
