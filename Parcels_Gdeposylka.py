@@ -278,7 +278,7 @@ class Main(tk.Frame):
             except:
                 print(str(i) + " ## " + str(key) + " ## " + "????")
             opp_str = str(key) + " ## " + value
-            self.label_info.configure(text="Поиск данных для посылки: " + treck + " ## " + opp_str)
+            self.label_info.configure(text="Поиск данных для: " + treck + " ## " + opp_str)
             self.update()
             time.sleep(0.3)
             opp.append(mail_answer[key])
