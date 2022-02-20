@@ -9,6 +9,9 @@ import json
 import requests
 import datetime
 import babel.numbers
+import requests
+from bs4 import BeautifulSoup
+
 
 class Main(tk.Frame):
 
@@ -21,7 +24,7 @@ class Main(tk.Frame):
         self.style.map('Treeview', foreground=self.fixed_map('foreground'), background=self.fixed_map('background'))
         self.tree.tag_configure("new", foreground="green", background="white")
         self.tree.tag_configure("old", foreground="black", background="white")
-        self.recieved_events = ["Получено адресатом", "Package received", "Вручено в постамате", "Получено"]
+        self.recieved_events = ["Посылка доставлена", "Получено адресатом", "Package received", "Вручено в постамате", "Получено"]
 
     def fixed_map(self, option):
         # Fix for setting text colour for Tkinter 8.6.9
@@ -140,6 +143,44 @@ class Main(tk.Frame):
         [self.tree.delete(i) for i in self.tree.get_children()]
         [self.tree.insert('', 'end', values=row) for row in self.db.c.fetchall()]
 
+    def info_from_gdeposylka(self, treck):
+        headers = {
+            "accept": "text/css,*/*;q=0.1",
+            "User-Agent": "Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36"
+        }
+        operation = {}
+        if len(treck) != 0:
+            url = "https://gdeposylka.ru/" + treck
+            req = requests.get(url, headers=headers)
+            src = req.text
+            with open("gdeposylka.html", "w", encoding="utf-8") as file:
+                file.write(src)
+
+            with open("gdeposylka.html", "r", encoding="utf-8") as file:
+                src = file.read()
+
+            soup = BeautifulSoup(src, "lxml")
+            try:
+                carriers = \
+                soup.find("section", class_="container page-courier-list d-print-none").find_all("a", href=True)[0]
+            except:
+                return operation
+            carriers = carriers.text
+            print("Перевозчик: ", carriers)
+            print()
+            events = soup.find_all("span", class_="td info status-iconed")
+            for event in events:
+                try:
+                    opp = event.find("strong", class_="checkpoint-status").text.strip()
+                    ddtime = event.find("time", class_="datetime2").get("datetime").split("T")
+                    place = event.find("em", class_="text-muted").text.strip()
+                    str_operation = opp + " ## " + place
+                    date_time = str(ddtime[1]) + " " + str(ddtime[0])
+                    operation[date_time] = str_operation
+                except:
+                    print("Какая то ошибка в поиске...")
+        return operation
+
     def get_carrier(self, treck_number):
         carrier="Перевозчик не найден"
         headers = {
@@ -207,18 +248,92 @@ class Main(tk.Frame):
                             date_oper = datetime.datetime.fromtimestamp(int(timestamp))
 
                             try:
-                                location = str(event['location'])
+                                location = event['location']
                             except:
                                 location = ""
+
                             place_event = str(event['operation']+" ## "+location)
                             mail_events[date_oper] = place_event
                         except:
-                            mail_events[date_oper] = "ИЕРЕГЛИФЫ!!"
+                            mail_events[date_oper] = ""
                      return mail_events
                 else:
                      return mail_events
         else:
             return mail_events
+
+
+
+    def all_show(self, mail_answer, treck):
+        i = 0
+        info = []
+        opp = []
+        oppstr = []
+        text_str = ""
+        opp_str = ""
+        for key, value in mail_answer.items():
+            i = i + 1
+            try:
+                print(str(i) + " ## " + str(key) + " ## " + value)
+            except:
+                print(str(i) + " ## " + str(key) + " ## " + "????")
+            opp_str = str(key) + " ## " + value
+            self.label_info.configure(text="Поиск данных для посылки: " + treck + " ## " + opp_str)
+            self.update()
+            time.sleep(0.3)
+            opp.append(mail_answer[key])
+            oppstr.append(opp_str)
+
+        if self.info_mail != oppstr[0]:
+            print("Статус посылки изменился для " + treck)
+            self.flag_new.append(treck)
+            self.info_mail = oppstr[0]
+
+        op = opp[0].split(sep=" ## ")
+
+        if len(set(op) & set(self.recieved_events)) != 0:
+            print("Посылка получена для " + treck)
+            self.parcel_recieved = "True"
+
+
+
+
+    def show(self, mail_answer, data_of_order, treck, description, info_mail, parcel_recieved):
+        i = 0
+        info = []
+        opp = []
+        oppstr = []
+        flag = False
+
+        for key, value in mail_answer.items():
+            i = i + 1
+            text_str = str(i) + " ## " + str(key) + " ## " + value + "\n"
+            try:
+                print( str(i) + " ## " + str(key) + " ## " + value)
+            except:
+                print(str(i) + " ## " + str(key) + " ## " + "?????")
+            self.label_info.configure(text="Поиск данных для посылки: " + treck + " ## " + text_str)
+            self.update()
+            time.sleep(0.3)
+            opp_str = str(key) + " ## " + value
+            info.append(text_str)
+            opp.append(mail_answer[key])
+            oppstr.append(opp_str)
+
+        showinfo(title='Information from ' + self.get_carrier(treck), message=info)
+
+        if info_mail != oppstr[0]:
+            print("Статус посылки изменился!")
+            flag = True
+            info_mail = oppstr[0]
+        op = opp[0].split(sep=" ## ")
+
+        if len(set(op) & set(self.recieved_events)) != 0:
+            print("Посылка получена!")
+            parcel_recieved = "True"
+
+        self.update_record(data_of_order, treck, description, info_mail, parcel_recieved, flag)
+
 
     def mail_check_show(self):
         treck=""
@@ -237,41 +352,48 @@ class Main(tk.Frame):
             showerror(title='Ошибка', message="Выдилите запись!")
         else:
             mail_answer = self.mail_check(treck)
+            # mail_answer = self.info_from_gdeposylka(treck)
             if len(mail_answer)==0:
-                showinfo(title='Information', message="Посылка не надена")
+                mail_answer = self.info_from_gdeposylka(treck)
+                if len(mail_answer) == 0:
+                    showinfo(title='Information', message="Посылка не надена")
+                else:
+                    mail_answer = self.info_from_gdeposylka(treck)
+                    print("Данные для трека:"+treck+" c Где посылка")
+                    self.show(mail_answer, data_of_order, treck, description, info_mail, parcel_recieved)
             else:
-                i=0
-                info=[]
-                opp=[]
-                oppstr=[]
-                flag=False
-                for key, value in sorted(mail_answer.items(), reverse=True):
-                    i = i + 1
-                    try:
-                        print(i, " ## ", key, " ## ", value)
-                    except:
-                        print(i, " ## ", key, " ## ")
-                    text_str = str(i) + " ## " + str(key) + " ## " + value + "\n"
-                    self.label_info.configure(text="Поиск данных для посылки: " + treck + " ## "+text_str)
-                    self.update()
-                    time.sleep(0.3)
-                    opp_str = str(key) + " ## " + value
-                    info.append(text_str)
-                    opp.append(mail_answer[key])
-                    oppstr.append(opp_str)
+                print("Данные для трека:" + treck + " c Моя посылка")
+                self.show(mail_answer, data_of_order, treck, description, info_mail, parcel_recieved)
 
-                showinfo(title='Information from ' + self.get_carrier(treck), message=info)
-                if info_mail !=  oppstr[0]:
-                    print("Статус посылки изменился!")
-                    flag=True
-                info_mail = oppstr[0]
-
-                op = opp[0].split(sep=" ## ")
-                if len(set(op) & set(self.recieved_events)) != 0:
-                    print("Посылка получена!")
-                    parcel_recieved = "True"
-
-                self.update_record(data_of_order, treck, description, info_mail, parcel_recieved, flag)
+            # else:
+            #     i=0
+            #     info=[]
+            #     opp=[]
+            #     oppstr=[]
+            #     flag=False
+            #     for key, value in mail_answer.items():
+            #         i = i + 1
+            #         print(i, " ## ", key, " ## ", value)
+            #         text_str = str(i) + " ## " + str(key) + " ## " + value + "\n"
+            #         self.label_info.configure(text="Поиск данных для посылки: " + treck + " ## "+text_str)
+            #         self.update()
+            #         time.sleep(0.3)
+            #         opp_str = str(key) + " ## " + value
+            #         info.append(text_str)
+            #         opp.append(mail_answer[key])
+            #         oppstr.append(opp_str)
+            #
+            #     showinfo(title='Information from ' + self.get_carrier(treck), message=info)
+            #     if info_mail !=  oppstr[0]:
+            #         print("Статус посылки изменился!")
+            #         flag=True
+            #     info_mail = oppstr[0]
+            #     print("opp", opp[0])
+            #     if set(opp[0]) & set(self.recieved_events) != 0:
+            #         print("Посылка получена!")
+            #         parcel_recieved = "True"
+            #
+            #     self.update_record(data_of_order, treck, description, info_mail, parcel_recieved, flag)
 
         self.label_info.configure(text="")
         self.update()
@@ -283,57 +405,62 @@ class Main(tk.Frame):
 
         self.db.c.execute('''SELECT * FROM parcels''')
         [self.tree.delete(i) for i in self.tree.get_children()]
-        flag_new = []
+        self.flag_new = []
         for row in self.db.c.fetchall():
             data_of_order=row[0]
             treck = row[1]
             description = row[2]
-            info_mail = row[3]
-            parcel_recieved = row[4]
+            self.info_mail = row[3]
+            self.parcel_recieved = row[4]
             self.label_info.configure(text="Поиск данных для посылки: "+treck)
             self.update()
 
             mail_answer = self.mail_check(treck)
             if len(mail_answer) == 0:
-                info_mail = "Нет данных"
+                mail_answer = self.info_from_gdeposylka(treck)
+                if len(mail_answer) ==0:
+                    info_mail = "Нет данных"
+                else:
+                    print("Данные с сайта Где посылка для трека: ", treck)
+                    self.all_show(mail_answer, treck)
             else:
-                i = 0
-                info = []
-                opp = []
-                oppstr = []
-                text_str = ""
-                opp_str = ""
-                for key, value in sorted(mail_answer.items(), reverse=True):
-                    i = i + 1
-                    try:
-                        print(i, " ## ", key, " ## ", value)
-                    except:
-                        print(i, " ## ", key, " ## ")
+                print("Данные с сайта Моя посылка для трека: ", treck)
+                self.all_show(mail_answer, treck)
 
-                    opp_str = str(key) + " ## " + value
-                    self.label_info.configure(text="Поиск данных для посылки: " + treck + " ## " + opp_str)
-                    self.update()
-                    time.sleep(0.3)
-                    opp.append(mail_answer[key])
-                    oppstr.append(opp_str)
+            # if info_mail != "Нет данных":
+            #     i = 0
+            #     info = []
+            #     opp = []
+            #     oppstr = []
+            #     text_str = ""
+            #     opp_str = ""
+            #     for key, value in mail_answer.items():
+            #         i = i + 1
+            #         print(i, " ## ", key, " ## ", value)
+            #         opp_str = str(key) + " ## " + value
+            #         self.label_info.configure(text="Поиск данных для посылки: " + treck + " ## " + opp_str)
+            #         self.update()
+            #         time.sleep(0.3)
+            #         opp.append(mail_answer[key])
+            #         oppstr.append(opp_str)
+            #
+            #     if info_mail != oppstr[0]:
+            #         print("Статус посылки изменился для "+treck)
+            #         flag_new.append(treck)
+            #         info_mail = oppstr[0]
+            #
+            #     op = opp[0].split(sep=" ## ")
+            #     if op in self.recieved_events:
+            #         print("Посылка получена для "+treck)
+            #         parcel_recieved = "True"
 
-                if info_mail != oppstr[0]:
-                    print("Статус посылки изменился для "+treck)
-                    flag_new.append(treck)
-                    info_mail = oppstr[0]
-
-                op = opp[0].split(sep=" ## ")
-                if len(set(op) & set(self.recieved_events)) != 0:
-                    print("Посылка получена для "+treck)
-                    parcel_recieved = "True"
-
-            self.update_recordAll( data_of_order, treck, description, info_mail, parcel_recieved)
+            self.update_recordAll(data_of_order, treck, description, self.info_mail, self.parcel_recieved)
 
         self.db.c.execute('''SELECT * FROM parcels''')
         [self.tree.delete(i) for i in self.tree.get_children()]
-        print("Есть изменения для посылок: ", flag_new)
+        print("Есть изменения для посылок: ", self.flag_new)
         for row in self.db.c.fetchall():
-            if row[1] in flag_new:
+            if row[1] in self.flag_new:
                 print("Изменения ", row[1])
                 self.tree.insert('', 'end', values=row, tags=("new"))
             else:
