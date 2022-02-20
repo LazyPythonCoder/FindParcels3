@@ -72,6 +72,11 @@ class Main(tk.Frame):
                                 compound=tk.TOP, command=self.all_mail_check)
         btn_refresh.pack(side=tk.LEFT)
 
+        self.info_img = tk.PhotoImage(file='info.gif')
+        btn_info = tk.Button(toolbar, text='О программе', bg='#d7d8e0', bd=0, image=self.info_img,
+                                compound=tk.TOP, command=self.info_show)
+        btn_info.pack(side=tk.RIGHT)
+
         self.tree = ttk.Treeview(self, columns=("data_of_order", "treck", "description", "info_mail", "parcel_recieved"), height = 15, show = "headings")
         self.tree.column("data_of_order", width = 100, anchor = tk.CENTER)
         self.tree.column("treck", width = 150, anchor = tk.CENTER)
@@ -88,6 +93,9 @@ class Main(tk.Frame):
         self.tree.bind('<<TreeviewSelect>>', self.item_selected)
         self.label_info = ttk.Label(self, width=200)
         self.label_info.pack()
+
+    def info_show(self):
+        pass
 
     def item_selected(self, event):
         global record
@@ -501,8 +509,6 @@ class Search(tk.Toplevel):
         btn_search.place(x=105, y=50)
         btn_search.bind('<Button-1>', lambda event: self.view.search_records(self.entry_search.get()))
         btn_search.bind('<Button-1>', lambda event: self.destroy(), add='+')
-
-
 
 
 class DB():
