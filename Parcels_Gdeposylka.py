@@ -365,36 +365,6 @@ class Main(tk.Frame):
                 print("Данные для трека:" + treck + " c Моя посылка")
                 self.show(mail_answer, data_of_order, treck, description, info_mail, parcel_recieved)
 
-            # else:
-            #     i=0
-            #     info=[]
-            #     opp=[]
-            #     oppstr=[]
-            #     flag=False
-            #     for key, value in mail_answer.items():
-            #         i = i + 1
-            #         print(i, " ## ", key, " ## ", value)
-            #         text_str = str(i) + " ## " + str(key) + " ## " + value + "\n"
-            #         self.label_info.configure(text="Поиск данных для посылки: " + treck + " ## "+text_str)
-            #         self.update()
-            #         time.sleep(0.3)
-            #         opp_str = str(key) + " ## " + value
-            #         info.append(text_str)
-            #         opp.append(mail_answer[key])
-            #         oppstr.append(opp_str)
-            #
-            #     showinfo(title='Information from ' + self.get_carrier(treck), message=info)
-            #     if info_mail !=  oppstr[0]:
-            #         print("Статус посылки изменился!")
-            #         flag=True
-            #     info_mail = oppstr[0]
-            #     print("opp", opp[0])
-            #     if set(opp[0]) & set(self.recieved_events) != 0:
-            #         print("Посылка получена!")
-            #         parcel_recieved = "True"
-            #
-            #     self.update_record(data_of_order, treck, description, info_mail, parcel_recieved, flag)
-
         self.label_info.configure(text="")
         self.update()
 
@@ -426,33 +396,6 @@ class Main(tk.Frame):
             else:
                 print("Данные с сайта Моя посылка для трека: ", treck)
                 self.all_show(mail_answer, treck)
-
-            # if info_mail != "Нет данных":
-            #     i = 0
-            #     info = []
-            #     opp = []
-            #     oppstr = []
-            #     text_str = ""
-            #     opp_str = ""
-            #     for key, value in mail_answer.items():
-            #         i = i + 1
-            #         print(i, " ## ", key, " ## ", value)
-            #         opp_str = str(key) + " ## " + value
-            #         self.label_info.configure(text="Поиск данных для посылки: " + treck + " ## " + opp_str)
-            #         self.update()
-            #         time.sleep(0.3)
-            #         opp.append(mail_answer[key])
-            #         oppstr.append(opp_str)
-            #
-            #     if info_mail != oppstr[0]:
-            #         print("Статус посылки изменился для "+treck)
-            #         flag_new.append(treck)
-            #         info_mail = oppstr[0]
-            #
-            #     op = opp[0].split(sep=" ## ")
-            #     if op in self.recieved_events:
-            #         print("Посылка получена для "+treck)
-            #         parcel_recieved = "True"
 
             self.update_recordAll(data_of_order, treck, description, self.info_mail, self.parcel_recieved)
 
@@ -573,6 +516,12 @@ class DB():
         self.c.execute('''INSERT INTO parcels(data_of_order, treck, description, info_mail, parcel_recieved) VALUES(?,?,?,?,?)''', (data_of_order, treck, description, info_mail, parcel_recieved))
         self.conn.commit()
 
+def on_closing():
+    if os.path.isfile('gdeposylka.html'):
+        print("Удаление gdeposylka.html")
+        os.remove('gdeposylka.html')
+    root.destroy()
+
 record = []
 root = tk.Tk()
 db=DB()
@@ -581,6 +530,7 @@ app.pack()
 root.title("Мои посылки")
 root.geometry("1200x450+300+200")
 root.resizable(False,False)
+root.protocol("WM_DELETE_WINDOW", on_closing)
 root.mainloop()
 
 if __name__=="main":
