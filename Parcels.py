@@ -262,7 +262,7 @@ class Main(tk.Frame):
 
                 showinfo(title='Information from ' + self.get_carrier(treck), message=info)
                 if info_mail !=  oppstr[0]:
-                    print("Статус посылки изменился!")
+                    print("Статус посылки изменился")
                     flag=True
                 info_mail = oppstr[0]
 
