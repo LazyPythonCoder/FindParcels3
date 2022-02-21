@@ -11,6 +11,7 @@ import datetime
 import babel.numbers
 import requests
 from bs4 import BeautifulSoup
+import webbrowser
 
 
 class Main(tk.Frame):
@@ -95,7 +96,25 @@ class Main(tk.Frame):
         self.label_info.pack()
 
     def info_prog(self):
-        showinfo(title='Information', message="Данные о порограмме")
+        message_text =" https://github.com/LazyPythonCoder/FindParcels3"
+        infowindow = tk.Toplevel()
+        infowindow.title('О программе')
+        infowindow.geometry('300x80+400+300')
+        infowindow.resizable(False, False)
+        label_text = tk.Label(infowindow, text="Исходный код программы:")
+        label_text.pack()
+        label_href = tk.Label(infowindow, text=message_text,fg="blue", cursor="hand2")
+        label_href.bind('<Button-1>',lambda e: callback(message_text))
+        label_href.pack()
+        label_text2 = tk.Label(infowindow, text="roman1971@yandex.ru"+"\n"+"2022 год.")
+        label_text2.pack()
+
+        def callback(url):
+            webbrowser.open_new(url)
+
+
+
+
 
     def item_selected(self, event):
         global record
