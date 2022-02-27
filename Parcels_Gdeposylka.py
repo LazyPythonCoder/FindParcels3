@@ -15,7 +15,6 @@ import webbrowser
 
 
 class Main(tk.Frame):
-
     def __init__(self,root):
         super().__init__(root)
         self.init_main()
@@ -176,6 +175,7 @@ class Main(tk.Frame):
             "User-Agent": "Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36"
         }
         operation = {}
+        carrier = ""
         if len(treck) != 0:
             url = "https://gdeposylka.ru/" + treck
             req = requests.get(url, headers=headers)
@@ -188,12 +188,12 @@ class Main(tk.Frame):
 
             soup = BeautifulSoup(src, "lxml")
             try:
-                carriers = \
-                soup.find("section", class_="container page-courier-list d-print-none").find_all("a", href=True)[0]
+                carriers = soup.find("section", class_="container page-courier-list d-print-none").find_all("a", href=True)[0]
+                carrier = carriers.text
             except:
-                return operation
-            carriers = carriers.text
-            print("Перевозчик: ", carriers)
+                return carrier, operation
+
+            print("Перевозчик: ", carrier)
             print()
             events = soup.find_all("span", class_="td info status-iconed")
             for event in events:
@@ -206,9 +206,10 @@ class Main(tk.Frame):
                     operation[date_time] = str_operation
                 except:
                     print("Какая то ошибка в поиске...")
-        return operation
+        return carrier, operation
 
     def get_carrier(self, treck_number):
+
         carrier="Перевозчик не найден"
         headers = {
             "accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9",
@@ -224,7 +225,7 @@ class Main(tk.Frame):
                 res_dict = json.loads(src, encoding="utf-8")
                 res_dict = list(res_dict)[0]
                 carrier = res_dict["code"]
-                print(carrier)
+                print("Перевозчик", carrier)
                 return carrier
             else:
                 return carrier
@@ -257,14 +258,14 @@ class Main(tk.Frame):
         if carrier !="Перевозчик не найден":
             self.set_treck(treck_number)
             time.sleep(3)
-            url = "https://moyaposylka.ru/api/v1/trackers/" + self.get_carrier(treck_number) + "/" + treck_number
+            url = "https://moyaposylka.ru/api/v1/trackers/" + carrier + "/" + treck_number
             print(url)
             req = requests.get(url, headers=headers)
             src = req.text
             res_dict = json.loads(src, encoding="utf-8")
             message = list(res_dict.values())[0]
             if message == 404:
-                return mail_events
+                return carrier, mail_events
             else:
                 events = res_dict["events"]
 
@@ -283,11 +284,11 @@ class Main(tk.Frame):
                             mail_events[date_oper] = place_event
                         except:
                             mail_events[date_oper] = ""
-                     return mail_events
+                     return carrier, mail_events
                 else:
-                     return mail_events
+                     return carrier, mail_events
         else:
-            return mail_events
+            return carrier, mail_events
 
 
 
@@ -325,7 +326,7 @@ class Main(tk.Frame):
 
 
 
-    def show(self, mail_answer, data_of_order, treck, description, info_mail, parcel_recieved):
+    def show(self, carrier, mail_answer, data_of_order, treck, description, info_mail, parcel_recieved):
         i = 0
         info = []
         opp = []
@@ -347,7 +348,7 @@ class Main(tk.Frame):
             opp.append(mail_answer[key])
             oppstr.append(opp_str)
 
-        showinfo(title='Information from ' + self.get_carrier(treck), message=info)
+        showinfo(title='Information from ' + carrier, message=info)
 
         if info_mail != oppstr[0]:
             print("Статус посылки изменился!")
@@ -378,19 +379,19 @@ class Main(tk.Frame):
         if len(treck) ==0:
             showerror(title='Ошибка', message="Выдилите запись!")
         else:
-            mail_answer = self.mail_check(treck)
-            # mail_answer = self.info_from_gdeposylka(treck)
+            carrier, mail_answer = self.mail_check(treck)
+            # carrier, mail_answer = self.info_from_gdeposylka(treck)
             if len(mail_answer)==0:
-                mail_answer = self.info_from_gdeposylka(treck)
+                carrier, mail_answer = self.info_from_gdeposylka(treck)
                 if len(mail_answer) == 0:
                     showinfo(title='Information', message="Посылка не надена")
                 else:
-                    mail_answer = self.info_from_gdeposylka(treck)
+                    carrier, mail_answer = self.info_from_gdeposylka(treck)
                     print("Данные для трека:"+treck+" c Где посылка")
-                    self.show(mail_answer, data_of_order, treck, description, info_mail, parcel_recieved)
+                    self.show(carrier, mail_answer, data_of_order, treck, description, info_mail, parcel_recieved)
             else:
                 print("Данные для трека:" + treck + " c Моя посылка")
-                self.show(mail_answer, data_of_order, treck, description, info_mail, parcel_recieved)
+                self.show(carrier, mail_answer, data_of_order, treck, description, info_mail, parcel_recieved)
 
         self.label_info.configure(text="")
         self.update()
@@ -412,9 +413,9 @@ class Main(tk.Frame):
             self.label_info.configure(text="Поиск данных для посылки: "+treck)
             self.update()
 
-            mail_answer = self.mail_check(treck)
+            carrier, mail_answer = self.mail_check(treck)
             if len(mail_answer) == 0:
-                mail_answer = self.info_from_gdeposylka(treck)
+                carrier, mail_answer = self.info_from_gdeposylka(treck)
                 if len(mail_answer) ==0:
                     info_mail = "Нет данных"
                 else:
