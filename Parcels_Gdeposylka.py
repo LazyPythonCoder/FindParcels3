@@ -12,7 +12,7 @@ import babel.numbers
 import requests
 from bs4 import BeautifulSoup
 import webbrowser
-
+# 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
 
 class Main(tk.Frame):
     def __init__(self,root):
@@ -365,7 +365,6 @@ class Main(tk.Frame):
 
     def mail_check_show(self):
         treck=""
-
         for selection_item in self.tree.selection():
             data_of_order = self.tree.set(selection_item, '#1')
             treck =  self.tree.set(selection_item, '#2')
