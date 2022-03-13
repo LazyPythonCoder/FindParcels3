@@ -13,6 +13,7 @@ import requests
 from bs4 import BeautifulSoup
 import webbrowser
 
+# Program for searching parcels
 
 class Main(tk.Frame):
     def __init__(self,root):
@@ -242,7 +243,7 @@ class Main(tk.Frame):
         url_post_treck = " https://moyaposylka.ru/api/v1/trackers/" + self.get_carrier(treck_number) + "/" + treck_number
         req = requests.post(url_post_treck, headers=headers)
         src = req.text
-        print("Ответ сайта на постановку трека на поиск")
+        print("Ответ сайта на постановку трека в поиск")
         print(src)
         return src
 
