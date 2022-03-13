@@ -12,7 +12,7 @@ import babel.numbers
 import requests
 from bs4 import BeautifulSoup
 import webbrowser
-# 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
+
 
 class Main(tk.Frame):
     def __init__(self,root):
