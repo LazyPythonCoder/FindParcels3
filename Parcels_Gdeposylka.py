@@ -95,7 +95,7 @@ class Main(tk.Frame):
         self.label_info.pack()
 
     def info_prog(self):
-        message_text =" https://github.com/LazyPythonCoder/FindParcels3"
+        message_text ="https://github.com/LazyPythonCoder/FindParcels3"
         infowindow = tk.Toplevel()
         infowindow.title('О программе')
         infowindow.geometry('300x80+400+300')
