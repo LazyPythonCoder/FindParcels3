@@ -372,7 +372,10 @@ class Main(tk.Frame):
             description = self.tree.set(selection_item, '#3')
             info_mail = self.tree.set(selection_item, '#4')
             parcel_recieved = self.tree.set(selection_item, '#5')
-            print(info_mail)
+            try:
+                print(info_mail)
+            except:
+                print("иероглифы")
 
         self.label_info.configure(text="Поиск данных для посылки: " + treck+" Ждем-с...")
         self.update()
