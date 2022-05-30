@@ -323,7 +323,8 @@ class Main(tk.Frame):
         if len(set(op) & set(self.recieved_events)) != 0:
             print("Посылка получена для " + treck)
             self.parcel_recieved = "True"
-
+        else:
+            self.parcel_recieved = "False"
 
 
 
@@ -360,6 +361,8 @@ class Main(tk.Frame):
         if len(set(op) & set(self.recieved_events)) != 0:
             print("Посылка получена!")
             parcel_recieved = "True"
+        else:
+            parcel_recieved = "False"
 
         self.update_record(data_of_order, treck, description, info_mail, parcel_recieved, flag)
 
@@ -371,7 +374,9 @@ class Main(tk.Frame):
             treck =  self.tree.set(selection_item, '#2')
             description = self.tree.set(selection_item, '#3')
             info_mail = self.tree.set(selection_item, '#4')
+            print("info mail1=", info_mail)
             parcel_recieved = self.tree.set(selection_item, '#5')
+            print("parsel_recirved1=", parcel_recieved)
             try:
                 print(info_mail)
             except:
