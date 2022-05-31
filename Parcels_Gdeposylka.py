@@ -374,9 +374,7 @@ class Main(tk.Frame):
             treck =  self.tree.set(selection_item, '#2')
             description = self.tree.set(selection_item, '#3')
             info_mail = self.tree.set(selection_item, '#4')
-            print("info mail1=", info_mail)
             parcel_recieved = self.tree.set(selection_item, '#5')
-            print("parsel_recirved1=", parcel_recieved)
             try:
                 print(info_mail)
             except:
