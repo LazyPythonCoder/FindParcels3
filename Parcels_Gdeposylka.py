@@ -177,8 +177,9 @@ class Main(tk.Frame):
         }
         operation = {}
         carrier = ""
+        carrier = self.get_carrier(treck)
         if len(treck) != 0:
-            url = "https://gdeposylka.ru/" + treck
+            url = "https://gdeposylka.ru/courier/"+carrier+"/tracking/"+ treck
             req = requests.get(url, headers=headers)
             src = req.text
             with open("gdeposylka.html", "w", encoding="utf-8") as file:
