@@ -25,7 +25,7 @@ class Main(tk.Frame):
         self.style.map('Treeview', foreground=self.fixed_map('foreground'), background=self.fixed_map('background'))
         self.tree.tag_configure("new", foreground="green", background="white")
         self.tree.tag_configure("old", foreground="black", background="white")
-        self.recieved_events = ["Посылка доставлена", "Получено адресатом", "Package received", "Вручено в постамате", "Получено", "Вручение,Вручение адресату", "Отправление доставлено"]
+        self.recieved_events = ["Посылка доставлена", "Получено адресатом", "Package received", "Вручено в постамате", "Получено", "Вручение,Вручение адресату", "Отправление доставлено", "Посылка доставлена (забрана получателем)"]
 
     def fixed_map(self, option):
         # Fix for setting text colour for Tkinter 8.6.9
@@ -178,8 +178,10 @@ class Main(tk.Frame):
         operation = {}
         carrier = ""
         carrier = self.get_carrier(treck)
+        print(carrier)
         if len(treck) != 0:
             url = "https://gdeposylka.ru/courier/"+carrier+"/tracking/"+ treck
+            print(url)
             req = requests.get(url, headers=headers)
             src = req.text
             with open("gdeposylka.html", "w", encoding="utf-8") as file:
