@@ -124,8 +124,13 @@ class Main(tk.Frame):
         return record
 
     def records(self,data_of_order, treck, description, info_mail="Нет данных", parcel_recieved="False"):
-        self.db.insert_data(data_of_order, treck, description, info_mail, parcel_recieved)
-        self.view_records()
+        try:
+            self.db.insert_data(data_of_order, treck, description, info_mail, parcel_recieved)
+            self.view_records()
+        except Exception as err:
+            print(err)
+            if "UNIQUE constraint" in str(err.args):
+              showerror(title='Ошибка', message="Номер трека уже есть!")
 
     def update_record(self, data_of_order, treck, description, info_mail="Нет данных", parcel_recieved="False", flag=False):
         self.db.c.execute('''UPDATE parcels SET data_of_order=?, treck=?, description=?, info_mail=?, parcel_recieved=? WHERE treck=?''',
@@ -484,6 +489,7 @@ class Child(tk.Toplevel):
         self.btn_add.bind('<Button-1>', lambda event: self.view.records(self.entry_data_of_order.get(), self.entry_treck.get(), self.entry_description.get()))
         self.grab_set()
         self.focus_set()
+
 
 class Update(Child):
     def __init__(self):
