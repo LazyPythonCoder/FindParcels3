@@ -25,6 +25,7 @@ class Main(tk.Frame):
         self.style.map('Treeview', foreground=self.fixed_map('foreground'), background=self.fixed_map('background'))
         self.tree.tag_configure("new", foreground="green", background="white")
         self.tree.tag_configure("old", foreground="black", background="white")
+        self.tree.tag_configure("recieved", foreground="red", background="white")
         self.recieved_events = ["Посылка доставлена", "Получено адресатом", "Package received", "Вручено в постамате", "Получено", "Вручение,Вручение адресату", "Отправление доставлено", "Посылка доставлена (забрана получателем)"]
 
     def fixed_map(self, option):
@@ -163,7 +164,9 @@ class Main(tk.Frame):
         self.db.c.execute('''SELECT * FROM parcels''')
         [self.tree.delete(i) for i in self.tree.get_children()]
         for row in self.db.c.fetchall():
-            if flag and row[1]==treck:
+            if row[4]=="True":
+                self.tree.insert('', 'end', values=row, tags=("recieved"))
+            elif flag and row[1]==treck:
                 print(row[1])
                 self.tree.insert('', 'end', values=row, tags=("new"))
             else:
