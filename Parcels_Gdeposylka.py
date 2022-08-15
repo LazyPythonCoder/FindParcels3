@@ -244,14 +244,14 @@ class Main(tk.Frame):
         else:
             return carrier
 
-    def set_treck(self, treck_number):
+    def set_treck(self, treck_number, namecarrier):
         headers = {
             "accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9",
             "User-Agent": "Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/96.0.4664.45 Safari/537.36",
             "X-Api-Key": "1799fa40855d01e4ec00b4742be8bbda",
             "Content-Type": "application/json"
         }
-        url_post_treck = " https://moyaposylka.ru/api/v1/trackers/" + self.get_carrier(treck_number) + "/" + treck_number
+        url_post_treck = " https://moyaposylka.ru/api/v1/trackers/" + namecarrier + "/" + treck_number
         req = requests.post(url_post_treck, headers=headers)
         src = req.text
         print("Ответ сайта на постановку трека в поиск")
@@ -268,7 +268,7 @@ class Main(tk.Frame):
         }
         carrier = self.get_carrier(treck_number)
         if carrier !="Перевозчик не найден":
-            self.set_treck(treck_number)
+            self.set_treck(treck_number, carrier)
             time.sleep(3)
             url = "https://moyaposylka.ru/api/v1/trackers/" + carrier + "/" + treck_number
             print(url)
