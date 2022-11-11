@@ -576,6 +576,3 @@ root.geometry("1450x450+300+200")
 root.resizable(True,True)
 root.protocol("WM_DELETE_WINDOW", on_closing)
 root.mainloop()
-
-if __name__=="main":
-    Main()
