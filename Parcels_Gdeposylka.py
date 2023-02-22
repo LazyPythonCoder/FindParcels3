@@ -259,6 +259,7 @@ class Main(tk.Frame):
         return src
 
     def mail_check(self, treck_number):
+        deliv = False
         mail_events = {}
         headers = {
             "accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9",
@@ -280,6 +281,12 @@ class Main(tk.Frame):
                 return carrier, mail_events
             else:
                 events = res_dict["events"]
+                try:
+                    deliv = res_dict["delivered"]
+                    print("Del", deliv)
+                    deliv = True
+                except:
+                    print("Нет доставки")
 
                 if len(events) > 0:
                      for event in events:
@@ -296,15 +303,14 @@ class Main(tk.Frame):
                             mail_events[date_oper] = place_event
                         except:
                             mail_events[date_oper] = ""
-                     return carrier, mail_events
+                     return carrier, mail_events, deliv
                 else:
-                     return carrier, mail_events
+                     return carrier, mail_events, deliv
         else:
-            return carrier, mail_events
+            return carrier, mail_events, deliv
 
 
-
-    def all_show(self, mail_answer, treck):
+    def all_show(self, mail_answer, treck, deliv=False):
         i = 0
         info = []
         opp = []
@@ -331,7 +337,8 @@ class Main(tk.Frame):
 
         op = opp[0].split(sep=" ## ")
 
-        if len(set(op) & set(self.recieved_events)) != 0:
+        print("deliv", deliv)
+        if len(set(op) & set(self.recieved_events)) != 0 or deliv==True:
             print("Посылка получена для " + treck)
             self.parcel_recieved = "True"
         else:
@@ -339,7 +346,7 @@ class Main(tk.Frame):
 
 
 
-    def show(self, carrier, mail_answer, data_of_order, treck, description, info_mail, parcel_recieved):
+    def show(self, carrier, mail_answer, data_of_order, treck, description, info_mail, parcel_recieved, deliv=False):
         i = 0
         info = []
         opp = []
@@ -369,7 +376,7 @@ class Main(tk.Frame):
             info_mail = oppstr[0]
         op = opp[0].split(sep=" ## ")
 
-        if len(set(op) & set(self.recieved_events)) != 0:
+        if len(set(op) & set(self.recieved_events)) != 0 or deliv==True:
             print("Посылка получена!")
             parcel_recieved = "True"
         else:
@@ -396,7 +403,7 @@ class Main(tk.Frame):
         if len(treck) ==0:
             showerror(title='Ошибка', message="Выдилите запись!")
         else:
-            carrier, mail_answer = self.mail_check(treck)
+            carrier, mail_answer, deliv = self.mail_check(treck)
             # carrier, mail_answer = self.info_from_gdeposylka(treck)
             if len(mail_answer)==0:
                 carrier, mail_answer = self.info_from_gdeposylka(treck)
@@ -408,7 +415,7 @@ class Main(tk.Frame):
                     self.show(carrier, mail_answer, data_of_order, treck, description, info_mail, parcel_recieved)
             else:
                 print("Данные для трека:" + treck + " c Моя посылка")
-                self.show(carrier, mail_answer, data_of_order, treck, description, info_mail, parcel_recieved)
+                self.show(carrier, mail_answer, data_of_order, treck, description, info_mail, parcel_recieved, deliv)
 
         self.label_info.configure(text="")
         self.update()
@@ -430,7 +437,7 @@ class Main(tk.Frame):
             self.label_info.configure(text="Поиск данных для посылки: "+treck)
             self.update()
 
-            carrier, mail_answer = self.mail_check(treck)
+            carrier, mail_answer, deliv = self.mail_check(treck)
             if len(mail_answer) == 0:
                 carrier, mail_answer = self.info_from_gdeposylka(treck)
                 if len(mail_answer) ==0:
@@ -440,7 +447,7 @@ class Main(tk.Frame):
                     self.all_show(mail_answer, treck)
             else:
                 print("Данные с сайта Моя посылка для трека: ", treck)
-                self.all_show(mail_answer, treck)
+                self.all_show(mail_answer, treck, deliv)
 
             self.update_recordAll(data_of_order, treck, description, self.info_mail, self.parcel_recieved)
 
