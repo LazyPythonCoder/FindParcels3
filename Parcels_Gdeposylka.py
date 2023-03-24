@@ -278,7 +278,7 @@ class Main(tk.Frame):
             res_dict = json.loads(src, encoding="utf-8")
             message = list(res_dict.values())[0]
             if message == 404:
-                return carrier, mail_events
+                return carrier, mail_events, deliv
             else:
                 events = res_dict["events"]
                 try:
@@ -567,7 +567,12 @@ class DB():
         self.c.execute('''INSERT INTO parcels(data_of_order, treck, description, info_mail, parcel_recieved) VALUES(?,?,?,?,?)''', (data_of_order, treck, description, info_mail, parcel_recieved))
         self.conn.commit()
 
-def on_closing():
+    def closeDb(self):
+        self.c.close()
+        self.conn.close()
+
+def on_closing(datebase):
+    DB.closeDb(datebase)
     if os.path.isfile('gdeposylka.html'):
         print("Удаление gdeposylka.html")
         os.remove('gdeposylka.html')
@@ -581,5 +586,5 @@ app.pack()
 root.title("Мои посылки")
 root.geometry("1450x450+300+200")
 root.resizable(True,True)
-root.protocol("WM_DELETE_WINDOW", on_closing)
+root.protocol("WM_DELETE_WINDOW", lambda: on_closing(db))
 root.mainloop()
