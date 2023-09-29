@@ -26,7 +26,7 @@ class Main(tk.Frame):
         self.tree.tag_configure("new", foreground="green", background="white")
         self.tree.tag_configure("old", foreground="black", background="white")
         self.tree.tag_configure("recieved", foreground="red", background="white")
-        self.recieved_events = ["Посылка доставлена", "Получено адресатом", "Package received", "Package delivered", "Вручено в постамате", "Получено", "Вручение,Вручение адресату", "Отправление доставлено", "Посылка доставлена (забрана получателем)"]
+        self.recieved_events = ["Посылка доставлена", "Готово для доставки", "Получено адресатом", "Package received", "Package delivered", "Вручено в постамате", "Получено", "Вручение,Вручение адресату", "Отправление доставлено", "Посылка доставлена (забрана получателем)"]
 
     def fixed_map(self, option):
         # Fix for setting text colour for Tkinter 8.6.9
